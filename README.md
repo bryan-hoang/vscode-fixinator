@@ -1,12 +1,13 @@
 # vscode-fixinator
 
-
+```
 ______ _______   _______ _   _   ___ _____ ___________ 
 |  ___|_   _\ \ / /_   _| \ | | / _ \_   _|  _  | ___ \
 | |_    | |  \ V /  | | |  \| |/ /_\ \| | | | | | |_/ /
 |  _|   | |  /   \  | | | . ` ||  _  || | | | | |    / 
 | |    _| |_/ /^\ \_| |_| |\  || | | || | \ \_/ / |\ \ 
 \_|    \___/\/   \/\___/\_| \_/\_| |_/\_/  \___/\_| \_|
+```
 
 Fixinator makes it easy to find and fix security vulnerabilities in your CFML / ColdFusion source code.
 
