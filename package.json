@@ -1,0 +1,74 @@
+{
+  "name": "vscode-fixinator",
+  "displayName": "Fixinator Security Scanner",
+  "description": "Fixinator Security scanning in VSCode",
+  "version": "1.0.3",
+  "license": "MIT",
+  "publisher": "markdrew",
+  "repository": "https://github.com/cybersonic/vscode-fixinator",
+  "engines": {
+    "vscode": "^1.97.0"
+  },
+  "categories": [
+    "Linters"
+  ],
+  "activationEvents": [
+    "onLanguage:cfml"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "vscode-fixinator.scan",
+        "title": "Fixinator Scan Current File"
+      }
+    ],
+    "configuration": {
+      "title": "Fixinator",
+      "properties": {
+        "fixinator.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "The API Key for Fixinator"
+        },
+        "fixinator.endpoint": {
+          "type": "string",
+          "default": "https://api.fixinator.app/v1/scan",
+          "description": "The URL to the Fixinator Server"
+        },
+        "fixinator.scanOnSave": {
+          "type": "boolean",
+          "default": false,
+          "description": "Scan the file on save"
+        },
+        "fixinator.useCommandbox": {
+          "type": "boolean",
+          "default": false,
+          "description": "Use CommandBox to run Fixinator"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "test": "jest",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "vscode:prepublish": "npm version patch --no-git-tag-version && npm run compile",
+    "vscode:package": "vsce package",
+    "vscode:publish": "vsce publish"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.14",
+    "@types/node": "^16.18.126",
+    "@types/vscode": "^1.97.0",
+    "@typescript-eslint/eslint-plugin": "^5.62.0",
+    "@typescript-eslint/parser": "^5.62.0",
+    "@vscode/test-electron": "^2.4.1",
+    "eslint": "^8.57.1",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.6",
+    "typescript": "^4.9.5"
+  }
+}

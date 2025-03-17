@@ -1,0 +1,471 @@
+{
+    "timestamp": "2025-03-11T18:48:05Z",
+    "categories": {
+        "java-known-vulnerabilities": {
+            "category": "Java Known Vulnerabilities",
+            "name": "Known Vulnerable Java Library",
+            "type": "Security",
+            "description": "A Java library (jar file) with published known vulnerabilities was detected."
+        },
+        "file-access": {
+            "category": "File System",
+            "name": "Possible Unsafe File Access",
+            "type": "Security",
+            "description": "Use of unsafe variables within a file path."
+        },
+        "crossorigin": {
+            "category": "Browser Security",
+            "name": "Crossorigin",
+            "type": "Security",
+            "description": "Scripts and stylesheets loaded externally should set the crossorigin attribute. Ideally the crossorigin attribute should be set to anonymous to prevent credential leaks. If credentials must be sent, then it should be set to use-credentials."
+        },
+        "adobe-deprecated": {
+            "category": "Deprecated",
+            "name": "Adobe ColdFusion Deprecated Feature",
+            "type": "Deprecated",
+            "description": "This code is using deprecated functionality"
+        },
+        "session-id-disclosure": {
+            "category": "Session Management",
+            "name": "Session ID Disclosure",
+            "type": "Security",
+            "description": "Possible disclosure of session identifiers may lead to increased session hijacking risk."
+        },
+        "xss": {
+            "category": "Cross Site Scripting",
+            "name": "Cross Site Scripting",
+            "type": "Security",
+            "description": "When outputting variables ensure that they are encoded to prevent client side script execution"
+        },
+        "session-cookie-not-secure": {
+            "category": "Session Management",
+            "name": "Session Cookie Not Secure",
+            "type": "Security",
+            "description": "The Application setting this.sessionCookie.secure should be set to true."
+        },
+        "session-cookie-not-httponly": {
+            "category": "Session Management",
+            "name": "Session Cookie HTTPOnly",
+            "type": "Security",
+            "description": "The Application setting this.sessionCookie.httpOnly should be set to true."
+        },
+        "evaluate": {
+            "category": "Remote Code Execution",
+            "name": "Evaluate (Possible RCE)",
+            "type": "Security",
+            "link": "https://foundeo.com/security/guide/evaluate/",
+            "description": "The use of evaluate may allow for remote code execution if the expression contains unchecked input variables. Rewrite using bracket notation instead."
+        },
+        "file-upload": {
+            "category": "File System",
+            "name": "Possible Unsafe File Upload",
+            "type": "Security",
+            "description": "Upload destination may be under web root, or file extension may be unchecked."
+        },
+        "session-cookie-samesite-none": {
+            "category": "Session Management",
+            "name": "Session Cookie SameSite",
+            "type": "Security",
+            "description": "The Application setting this.sessionCookie.sameSite should be set to strict or lax."
+        },
+        "setvariable": {
+            "category": "Remote Code Execution",
+            "name": "SetVariable (Possible RCE)",
+            "type": "Security",
+            "description": "Avoid the SetVariable function as it may allow for remote code execution when the argument is evaluated."
+        },
+        "cflocation-addtoken": {
+            "category": "Session Management",
+            "name": "CFLocation Adds Session Token",
+            "type": "Security",
+            "description": "The CFLocation tag will automatically add the Session Identifiers (CFID, CFTOKEN or JSESSIONID) to the URL unless addtoken=false/no which increases risks for session hijacking."
+        },
+        "plain-text-key": {
+            "category": "Authentication",
+            "name": "Plain Text Key",
+            "type": "Security",
+            "description": "A plain text key was found in the code. Consider using a secrets management api instead."
+        },
+        "vulnerable-cfml-library": {
+            "category": "CFML Known Vulnerabilities",
+            "name": "Known Vulnerable CFML Library",
+            "type": "Security",
+            "description": "A CFML library with known vulnerabilities was detected."
+        },
+        "missing-sessionrotate-after-login": {
+            "category": "Session Management",
+            "name": "Missing Session Rotate After Login",
+            "type": "Security",
+            "description": "The session identifiers should be rotated after login to avoid a session fixation attack. Use SessionRotate or getPageContext().getRequest().changeSessionId() for J2EE sessions."
+        },
+        "clientstorage-cookie": {
+            "category": "Remote Code Execution",
+            "name": "ClientStorage Cookie",
+            "type": "Security",
+            "description": "The this.clientStorage application setting is either set to cookie, or not set which defaults to cookie on Lucee. On Lucee this can cause a Remote Code Execution issue, set clientStorage=memory. On Adobe ColdFusion and Lucee setting it to cookie can allow client variable manipulation by tampering with the cookies. This issue has nothing to do with the setClientCookies setting."
+        },
+        "javascript-eval": {
+            "category": "Java Known Vulnerabilities",
+            "name": "JavaScript Eval",
+            "type": "Security",
+            "description": "Use of the eval function in JavaScript can cause malicious execution, and should be avoided."
+        },
+        "reverse-tabnabbing": {
+            "category": "Browser Security",
+            "name": "Reverse Tabnabbing",
+            "type": "Security",
+            "description": "External Links with target=_blank must specify rel=noopener to prevent the external site from accessing window.opener. Additionally window.open should be avoided to open external links."
+        },
+        "weak-encryption": {
+            "category": "Cryptography",
+            "name": "Weak Encryption Algorithm Usage",
+            "type": "Security",
+            "description": "Algorithms such as CFMX_COMPAT (the default before CF2023 u8 and CF2021 u14) are considered weak, and may not even be considered encryption at all. The DES algorithm is also considered weak. Use an industry standard algorithm such as AES instead. Note that as of ColdFusion CF2023 update 8 and CF2021 update 14 the default has changed to AES/CBC/PKCS5Padding from CFMX_COMPAT, so this is also a compatibility finding."
+        },
+        "cfhttp-timeout": {
+            "category": "Denial of Service",
+            "name": "Missing CFHttp Timeout",
+            "type": "Security",
+            "description": "The timeout attribute should be specified to avoid a Denial of Service, or an inverse slowloris attack. The cfhttp tag will wait forever for a response from the server unless the timeout is specified."
+        },
+        "iif": {
+            "category": "Remote Code Execution",
+            "name": "IIF (Possible RCE)",
+            "type": "Security",
+            "link": "https://foundeo.com/security/guide/iif/",
+            "description": "The second and third arguments of IIF are evaluated dynamically and may allow for Remote Code Execution if unchecked. Rewrite using the ternary operator (CF9+)"
+        },
+        "scope-append": {
+            "category": "Injection Vulnerabilities",
+            "name": "Scope Append",
+            "type": "Security",
+            "description": "Use of ScopeAppend into a protected scope may allow overwriting of variables."
+        },
+        "adobe-compatibility": {
+            "category": "Compatibility",
+            "name": "Adobe ColdFusion Compatibility",
+            "type": "Compatibility",
+            "description": "This code may not be compatible with the version of ColdFusion specified."
+        },
+        "vulnerable-js-library": {
+            "category": "Java Known Vulnerabilities",
+            "name": "Known Vulnerable JavaScript Library",
+            "type": "Security",
+            "description": "A JavaScript library with published known vulnerabilities was detected."
+        },
+        "xmlparse-xxe": {
+            "category": "XML",
+            "name": "XML Entity Injection",
+            "type": "Security",
+            "link": "https://foundeo.com/security/guide/xml-external-entities/",
+            "description": "To avoid XML entity injection pass a struct with the key allowExternalEntities set to false in the third argument of XMLParse."
+        },
+        "ldap-injection": {
+            "category": "Injection Vulnerabilities",
+            "name": "Possible LDAP Injection",
+            "type": "Security",
+            "description": "Variables within the cfldap tag do not encode variables using encodeForDN or encodeForLDAP"
+        },
+        "redos": {
+            "category": "Denial of Service",
+            "name": "ReDOS",
+            "type": "Security",
+            "description": "Regular Expression Denial of Service"
+        },
+        "isdefined-rce": {
+            "category": "Remote Code Execution",
+            "name": "IsDefined RCE (Lucee)",
+            "type": "Security",
+            "description": "A remote code execution vulnerability is possible on Lucee when an untrusted variable is passed in to the isDefined argument."
+        },
+        "boxlang-compatibility": {
+            "category": "Compatibility",
+            "name": "BoxLang Compatibility",
+            "type": "Compatibility",
+            "description": "This code may not be compatible with the version of Lucee specified."
+        },
+        "subresource-integrity": {
+            "category": "Browser Security",
+            "name": "Sub Resource Integrity",
+            "type": "Security",
+            "description": "External scripts or stylesheets should be loaded with an integrity attribute."
+        },
+        "random-algorithm": {
+            "category": "Cryptography",
+            "name": "Weak Random Algorithm",
+            "type": "Security",
+            "description": "Use a stronger random number algorithm."
+        },
+        "scope-injection-no-onsessionstart": {
+            "category": "Injection Vulnerabilities",
+            "name": "Missing OnSessionStart (Possible Scope Injection)",
+            "type": "Security",
+            "description": "You have sessionManagement enabled but do not have an onSessionStart defined. Ensure that any session variable used for security purposes is initialized."
+        },
+        "unscoped-variable": {
+            "category": "Injection Vulnerabilities",
+            "name": "Unscoped Variable",
+            "type": "Security",
+            "description": "After Adobe ColdFusion 2021 update 13, and ColdFusion 2023 Update 7 unscoped variables that searchImplicitScopes are disabled and unsafe according to Adobe APSB24-14."
+        },
+        "loginstorage-cookie": {
+            "category": "Session Management",
+            "name": "Insecure Login Storage",
+            "type": "Security",
+            "description": "The login storage should not be set to cookie."
+        },
+        "empty-rce": {
+            "category": "Remote Code Execution",
+            "name": "Empty() RCE (Lucee)",
+            "type": "Security",
+            "description": "A remote code execution vulnerability is possible on Lucee when an untrusted variable is passed in to the empty function argument."
+        },
+        "crlfinjection": {
+            "category": "Injection Vulnerabilities",
+            "name": "CRLF Injection",
+            "type": "Security",
+            "description": "When outputting variables within headers such as a HTTP or MIME header, injection of CRLF within the variable may allow the attacker to inject additional headers."
+        },
+        "lucee-compatibility": {
+            "category": "Compatibility",
+            "name": "Lucee Compatibility",
+            "type": "Compatibility",
+            "description": "This code may not be compatible with the version of Lucee specified."
+        },
+        "vulnerable-cfml-dependency": {
+            "category": "CFML Known Vulnerabilities",
+            "name": "Known Vulnerable CFML Dependency",
+            "type": "Security",
+            "description": "A CFML library with a known vulnerability was listed as a dependency."
+        },
+        "lucee-security-limitevaluation": {
+            "category": "Remote Code Execution",
+            "name": "Lucee Limit Evaluation Setting",
+            "type": "Security",
+            "description": "The this.security.limitEvaluation application setting is either set to false, or not found. On Lucee this can allow a Remote Code Execution vulnerability when variables are passed into the isDefined, structGet, or empty functions. If you do not use lucee, you can pass engines=adobe to ignore any lucee specific issues."
+        },
+        "weak-hash": {
+            "category": "Cryptography",
+            "name": "Weak Hashing Algorithm",
+            "type": "Security",
+            "description": "Use of a weak hashing algorithm such as MD5. This can also be a compatibility issue (after CF2023 update 8 and CF2021 update 14) if the hash algorithm is not specified. The default has changed from MD5 to SHA-256 in those releases."
+        },
+        "plain-text-password": {
+            "category": "Authentication",
+            "name": "Plain Text Password",
+            "type": "Security",
+            "description": "A plain text password or api key was found in the code. Consider using a secrets management api instead."
+        },
+        "sqlinjection": {
+            "category": "SQL Injection",
+            "name": "SQL Injection",
+            "type": "Security",
+            "description": "Variables within a SQL statement must be passed as parameters to the database engine, for example by using cfqueryparam"
+        },
+        "lucee-deprecated": {
+            "category": "Deprecated",
+            "name": "Lucee Deprecated Feature",
+            "type": "Deprecated",
+            "description": "This code is using deprecated functionality"
+        },
+        "compileextforinclude-wildcard": {
+            "category": "Remote Code Execution",
+            "name": "Application Setting compileExtForInclude Wildcard",
+            "type": "Security",
+            "description": "The Application setting compileExtForInclude should not be set to a wildcard, ideally it should just be set to cfm. The setting determines if cfinclude will compile an included file, or statically include the file without executing it."
+        },
+        "blockedextforfileupload": {
+            "category": "File System",
+            "name": "Application Setting blockedExtForFileUpload",
+            "type": "Security",
+            "description": "The application setting blockedExtForFileUpload should be specified to either * (to block all uploads) or a list containing all executable file extensions on the server. Take into consideration all software installed (CF, PHP, ASP, etc)."
+        },
+        "pathtraversal": {
+            "category": "File System",
+            "name": "Path Traversal",
+            "type": "Security",
+            "description": "Unchecked variable within a file path may allow an attacker to manipulate the file path to point to unexpected locations."
+        },
+        "structget-rce": {
+            "category": "Remote Code Execution",
+            "name": "StructGet RCE (Lucee)",
+            "type": "Security",
+            "description": "A remote code execution vulnerability is possible on Lucee when an untrusted variable is passed in to the structGet argument."
+        },
+        "mixed-content": {
+            "category": "Browser Security",
+            "name": "Mixed Content",
+            "type": "Security",
+            "description": "Content such as scripts, stylesheets, images, etc. should not be loaded over plain http. They should be loaded over https instead. This may trigger a mixed content warning or block in some browsers."
+        },
+        "pdf-injection": {
+            "category": "Injection Vulnerabilities",
+            "name": "PDF Injection",
+            "type": "Security",
+            "description": "Variables inside a cfdocument or cfhtmltopdf must be encoded (with encodeForHTML for example) to avoid SSRF and server side JS execution."
+        },
+        "cfloginuser-plain-password": {
+            "category": "Session Management",
+            "name": "CFLoginUser Plain Password",
+            "type": "Security",
+            "link": "https://www.petefreitag.com/blog/cflogin-security-consideration/",
+            "description": "The password should not be passed plainly in cfloginuser, pass a hash instead."
+        },
+        "searchimplicitscopes": {
+            "category": "Injection Vulnerabilities",
+            "name": "Search Implicit Scopes Enabled",
+            "type": "Security",
+            "description": "Adobe Security Bulliten APSB24-14 recommends settings searchImplicitScopes=false, this change can break applications, be sure to scope all variables first. You can use Fixinator to help find unscoped variables by running with: confidence=low includeScanners=unscoped-variable"
+        }
+    },
+    "files": [
+        "/Users/markdrew/Code/DistroKid/VSCode/vscode-fixinator/extension_workspace/multimatch/index.cfm",
+        "/Users/markdrew/Code/DistroKid/VSCode/vscode-fixinator/extension_workspace/-copy.namingrc",
+        "/Users/markdrew/Code/DistroKid/VSCode/vscode-fixinator/extension_workspace/.namingrc.json",
+        "/Users/markdrew/Code/DistroKid/VSCode/vscode-fixinator/extension_workspace/unit_tests/NoPostfix.cfc",
+        "/Users/markdrew/Code/DistroKid/VSCode/vscode-fixinator/extension_workspace/passwords/index.cfm",
+        "/Users/markdrew/Code/DistroKid/VSCode/vscode-fixinator/extension_workspace/webroot/tests/Sample.cfc",
+        "/Users/markdrew/Code/DistroKid/VSCode/vscode-fixinator/extension_workspace/webroot/tests/Application.cfc",
+        "/Users/markdrew/Code/DistroKid/VSCode/vscode-fixinator/extension_workspace/webroot/tests/test.php",
+        "/Users/markdrew/Code/DistroKid/VSCode/vscode-fixinator/extension_workspace/webroot/tests/.gitignore",
+        "/Users/markdrew/Code/DistroKid/VSCode/vscode-fixinator/extension_workspace/webroot/tests/Ignoreme.cfc",
+        "/Users/markdrew/Code/DistroKid/VSCode/vscode-fixinator/extension_workspace/webroot/tests/GoodTest.cfc",
+        "/Users/markdrew/Code/DistroKid/VSCode/vscode-fixinator/extension_workspace/webroot/readme.md",
+        "/Users/markdrew/Code/DistroKid/VSCode/vscode-fixinator/extension_workspace/bad.cfm",
+        "/Users/markdrew/Code/DistroKid/VSCode/vscode-fixinator/extension_workspace/regex/index.cfm",
+        "/Users/markdrew/Code/DistroKid/VSCode/vscode-fixinator/extension_workspace/.namingrc_bak.json",
+        "/Users/markdrew/Code/DistroKid/VSCode/vscode-fixinator/extension_workspace/errors.cfm",
+        "/Users/markdrew/Code/DistroKid/VSCode/vscode-fixinator/extension_workspace/info.cfm"
+    ],
+    "config": {
+        "minSeverity": "low",
+        "SILENT": true,
+        "ignorePaths": [],
+        "ignoreExtensions": [],
+        "goals": [
+            "security"
+        ],
+        "minConfidence": "high",
+        "ignoreScanners": [],
+        "ROOTPATH": "/"
+    },
+    "results": [
+        {
+            "message": "Plain Text Key finding on line 3 of index.cfm",
+            "position": 18,
+            "context": "password = \"**********\";",
+            "scanner": "cfmlauditor",
+            "column": 6,
+            "variable": "",
+            "path": "/passwords/index.cfm",
+            "severity": 2,
+            "line": 3,
+            "category": "Authentication",
+            "id": "plain-text-key",
+            "type": "Security",
+            "title": "Plain Text Key",
+            "function": "",
+            "description": "A plain text key was found in the code. Consider using a secrets management api instead.",
+            "confidence": 3
+        },
+        {
+            "message": "Plain Text Key finding on line 4 of index.cfm",
+            "position": 45,
+            "context": "apikey = \"DDASA@£W££ALK:LAKFL:AKSDF:LAKS\"",
+            "scanner": "cfmlauditor",
+            "column": 6,
+            "variable": "",
+            "path": "/passwords/index.cfm",
+            "severity": 2,
+            "line": 4,
+            "category": "Authentication",
+            "id": "plain-text-key",
+            "type": "Security",
+            "title": "Plain Text Key",
+            "function": "",
+            "description": "A plain text key was found in the code. Consider using a secrets management api instead.",
+            "confidence": 3
+        },
+        {
+            "message": "SQL Injection finding on line 2 of bad.cfm",
+            "position": 44,
+            "context": "SELECT * FROM users WHERE id = #url.id#",
+            "scanner": "cfmlauditor",
+            "fixes": [
+                {
+                    "REPLACEPOSITION": 44,
+                    "REPLACESTRING": "#url.id#",
+                    "fixCode": "<cfqueryparam value=\"#url.id#\">",
+                    "title": "cfqueryparam"
+                },
+                {
+                    "REPLACEPOSITION": 44,
+                    "REPLACESTRING": "#url.id#",
+                    "FIXCODE": "<cfqueryparam value=\"#url.id#\" cfsqltype=\"cf_sql_integer\">",
+                    "TITLE": "cfqueryparam integer"
+                },
+                {
+                    "REPLACEPOSITION": 44,
+                    "REPLACESTRING": "#url.id#",
+                    "FIXCODE": "<cfqueryparam value=\"#url.id#\" cfsqltype=\"cf_sql_bigint\">",
+                    "TITLE": "cfqueryparam bigint"
+                },
+                {
+                    "REPLACEPOSITION": 44,
+                    "REPLACESTRING": "#url.id#",
+                    "FIXCODE": "<cfqueryparam value=\"#url.id#\" cfsqltype=\"cf_sql_varchar\">",
+                    "TITLE": "cfqueryparam varchar"
+                },
+                {
+                    "REPLACEPOSITION": 44,
+                    "REPLACESTRING": "#url.id#",
+                    "FIXCODE": "<cfqueryparam value=\"#url.id#\" cfsqltype=\"cf_sql_timestamp\">",
+                    "TITLE": "cfqueryparam timestamp"
+                },
+                {
+                    "REPLACEPOSITION": 44,
+                    "REPLACESTRING": "#url.id#",
+                    "FIXCODE": "#int(val(url.id))#\"",
+                    "TITLE": "int(val()) wrap"
+                }
+            ],
+            "column": 34,
+            "variable": "",
+            "path": "/bad.cfm",
+            "severity": 3,
+            "line": 2,
+            "category": "SQL Injection",
+            "id": "sqlinjection",
+            "type": "Security",
+            "title": "SQL Injection",
+            "function": "",
+            "description": "Variables within a SQL statement must be passed as parameters to the database engine, for example by using cfqueryparam",
+            "confidence": 3
+        }
+    ],
+    "warnings": [],
+    "fixinator_client_version": "6.0.0",
+    "fixinatorArguments": {
+        "path": "/Users/markdrew/Code/DistroKid/VSCode/vscode-fixinator/extension_workspace/",
+        "resultFile": "../src/tests/fixinator.json",
+        "resultFormat": "json",
+        "verbose": true,
+        "listBy": "type",
+        "severity": "default",
+        "confidence": "default",
+        "ignoreScanners": "",
+        "autofix": "off",
+        "failOnIssues": true,
+        "debug": false,
+        "listScanners": false,
+        "ignorePaths": "",
+        "ignoreExtensions": "",
+        "gitLastCommit": false,
+        "gitChanged": false,
+        "engines": "",
+        "includeScanners": "",
+        "configFile": "",
+        "goals": "security",
+        "pwd": "/Users/markdrew/Code/DistroKid/VSCode/vscode-fixinator/extension_workspace/"
+    }
+}
