@@ -22,7 +22,7 @@ const severityMap = {
 	"2": vscode.DiagnosticSeverity.Warning,
 	"1": vscode.DiagnosticSeverity.Information,
 	"0": vscode.DiagnosticSeverity.Hint
-}
+};
 
 let diagnosticCollection: vscode.DiagnosticCollection;
 const diagnosticDataMap = new WeakMap<vscode.Diagnostic, any>(); //Thbis is any as we dont have an object for a fixinator result yet.
@@ -43,13 +43,16 @@ export async function activate(context: vscode.ExtensionContext) {
 			const filePath = document.uri.fsPath;
 
 			diagnosticCollection.clear();
-			vscode.window.showInformationMessage(`Fixinator is scanning  ${filePath}`);
+			// Add it to the output channel
+			logger.log(`Fixinator is scanning  ${filePath}`);
+			outputChannel.appendLine(`Fixinator is scanning  ${filePath}`);
+			// vscode.window.showInformationMessage(`Fixinator is scanning  ${filePath}`);
 			// runBoxFinxinatorScan(filePath);
 			await runFixinatorScan(filePath);
 
 		}
 		else {
-			vscode.window.showInformationMessage(`Fixinator is not available for this file type`);
+			vscode.window.showInformationMessage(`Fixinator is not available for this file type [${editor.document.languageId}]`);
 		}
 	}));
 
@@ -118,26 +121,28 @@ async function runHTTPSFixinitatorScan(filePath: string) {
 	});
 	payload['files'] = [{ path: filePath, data: text }];
 	payload['config'] = {};
-	payload['categories'] = true;
+	payload['categories'] = false;
 
 
 
 	const { apiKey, endpoint } = getSettings();
+	logger.info(`Running Fixinator scan to ${endpoint}`);
 	// Now fetch this via post
 	const headers = {
 		'Content-Type': 'application/json',
 		"x-api-key": apiKey
-	}
+	};
 
-	logger.log({ endpoint, headers, payload });
+	// logger.log({ endpoint, headers, payload });
 
 	fetch(endpoint, {
 		headers,
 		method: 'POST',
 		body: JSON.stringify(payload)
 	}).then(response => {
+
+		logger.info(`Running got the response ${JSON.stringify(response)}`);
 		if (response.ok) {
-			logger.log('Fixinator scan complete!');
 			vscode.window.showInformationMessage('Fixinator scan complete!');
 			return response.json();
 		} else {
@@ -147,26 +152,30 @@ async function runHTTPSFixinitatorScan(filePath: string) {
 				vscode.window.showErrorMessage('Fixinator scan failed! Check your API Key and Endpoint');
 				throw new Error('Fixinator Scan rejected by server');
 			}
-			vscode.window.showErrorMessage(`Fixinator scan failed! ${response.statusText}`);
+			// vscode.window.showErrorMessage(`Fixinator scan failed! ${response.statusText}`);
 			throw new Error('Fixinator scan failed!');
 		}
 	}).then(async (data) => {
+		console.log(data);
+		const results = data.results || [];
+		logger.log(`Found ${results.length} issues`);
 		const diagnosisForFile = [];
-		for (const result of data.results) {
+		for (const resid in data.results) {
+			const result = data.results[resid];
 			const diagnosis = await createDiagnosticFromResult(filePath, result);
 			diagnosisForFile.push(diagnosis);
 		}
 		diagnosticCollection.set(vscode.Uri.file(filePath), diagnosisForFile);
-
 
 	}).catch(error => {
 		logger.error(error);
 		vscode.window.showErrorMessage(`Fixinator scan failed! ${error.message}`);
 		console.error(error);
 	}
-	);
+	).finally(() => {
+		logger.log("Finished HTTPS Scan");
+	});
 
-	logger.log("Finished HTTPS Scan");
 
 }
 function runBoxFinxinatorScan(filePath: string) {
@@ -217,18 +226,35 @@ async function createDiagnosticFromResult(path: string, result: any): Promise<vs
 	// Read the contents of a file and find the location of the error
 	const diagnostic = await vscode.workspace.openTextDocument(path).then((document) => {
 
-		let startPosition: vscode.Position = document.positionAt(result.position - 2);
-		// const endPosition = document.positionAt(result.position - 2 + result.context.length - 1);
-		// let endPosition = document.positionAt(result.position);
-		let endPosition: vscode.Position = document.lineAt(startPosition.line).range.end;
+		const line = Math.max(0, result.line - 1);
+		const column = Math.max(0, result.column - 1);
+
+		const TheLine = document.lineAt(line);
+
+		
+		let startPosition: vscode.Position = new vscode.Position(line, TheLine.firstNonWhitespaceCharacterIndex);
+		let endPosition: vscode.Position = new vscode.Position(line, TheLine.range.end.character);
+		// let endPosition: vscode.Position = startPosition.translate(0, Math.max(0, result.context.length - 2));
+		let title = result.title || result.TITLE;
+		// if we are plain-text-key, the context doesnt return the key! 
+		// So we have to select to the end of the line. 
+		if (result.id === "plain-text-key") {
+			// const lineInfo = document.lineAt(line);
+			// const lineText = lineInfo.text;
+			// const key = lineText.substring(column, lineText.length);
+			// const keyLength = key.length;
+			// endPosition = startPosition.translate(0, keyLength);
+		}
 
 		if (result.fixes && result.fixes.length > 0) {
 			const fix = result.fixes[0];
-			console.log("First Fix", fix);
 			const replacestring = fix.replaceString || fix.REPLACESTRING;
-			const replacePosition = fix.REPLACEPOSITION || fix.REPLACEPOSITION;
-			startPosition = document.positionAt(replacePosition - 1);
-			endPosition = document.positionAt(replacePosition - 1 + replacestring.length);
+			const replacePosition = fix.replacePosition || fix.REPLACEPOSITION;
+
+			const pos = Math.max(0, replacePosition - 1);
+			startPosition = document.positionAt(pos);
+			endPosition = startPosition.translate(0, replacestring.length);
+			result.title += ` 🛠️`;
 		}
 
 		let range = new vscode.Range(
@@ -237,11 +263,20 @@ async function createDiagnosticFromResult(path: string, result: any): Promise<vs
 		);
 
 
-		const vscodeDoagnostic = new vscode.Diagnostic(range, result.message, severityMap[result.severity]);
-		vscodeDoagnostic.source = 'fixinator';
-		vscodeDoagnostic.code = result.title;
+		const vscodeDiagnostic = new vscode.Diagnostic(range, result.message, severityMap[result.severity]);
+		vscodeDiagnostic.source = 'fixinator';
+		if (result.link && result.title) {
+			vscodeDiagnostic.code = {
+				value: result.title,
+				target: vscode.Uri.parse(result.link),
+			};
+		}
+		else {
+			vscodeDiagnostic.code = result.title;
+		}
 
-		return vscodeDoagnostic;
+
+		return vscodeDiagnostic;
 	});
 
 	diagnosticDataMap.set(diagnostic, result);

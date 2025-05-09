@@ -1,0 +1,8 @@
+out
+dist
+node_modules
+.vscode-test/
+*.vsix
+extension_workspace/.namingrc_bak.json
+vsc-extension-quickstart.md
+extension_workspace/
