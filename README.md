@@ -1,14 +1,16 @@
 # Fixinator Extension for VSCode
 
+<!-- 
 ```
 ______ _______   _______ _   _   ___ _____ ___________ 
 |  ___|_   _\ \ / /_   _| \ | | / _ \_   _|  _  | ___ \
 | |_    | |  \ V /  | | |  \| |/ /_\ \| | | | | | |_/ /
 |  _|   | |  /   \  | | | . ` ||  _  || | | | | |    / 
 | |    _| |_/ /^\ \_| |_| |\  || | | || | \ \_/ / |\ \ 
-\_|    \___/\/   \/\___/\_| \_/\_| |_/\_/  \___/\_| \_|
+\_|    \___/\/   \/\___/\_| \_/\_| |_/\_/  \___/\_| \_| 
 ```
-
+-->
+<img src="https://raw.githubusercontent.com/cybersonic/vscode-fixinator/refs/heads/main/assets/icon.png" alt="Fixinator"/>
 
 [Fixinator](https://fixinator.app/) makes it easy to find and fix security vulnerabilities in your CFML / ColdFusion source code.
 ---
