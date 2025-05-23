@@ -35,7 +35,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	diagnosticCollection = vscode.languages.createDiagnosticCollection('Fixinator');
 	context.subscriptions.push(diagnosticCollection);
 
-	context.subscriptions.push(vscode.commands.registerCommand('vscode-fixinator.scan', async () => {
+	context.subscriptions.push(vscode.commands.registerCommand('fixinator.scan', async () => {
 		const editor = vscode.window.activeTextEditor;
 
 		if (editor && editor.document.languageId === 'cfml') {
@@ -44,8 +44,8 @@ export async function activate(context: vscode.ExtensionContext) {
 
 			diagnosticCollection.clear();
 			// Add it to the output channel
-			logger.log(`Fixinator is scanning  ${filePath}`);
-			outputChannel.appendLine(`Fixinator is scanning  ${filePath}`);
+			// logger.log(`l Fixinator is scanning  ${filePath}`);
+			// outputChannel.appendLine(`Fixinator is scanning  ${filePath}`);
 			// vscode.window.showInformationMessage(`Fixinator is scanning  ${filePath}`);
 			// runBoxFinxinatorScan(filePath);
 			await runFixinatorScan(filePath);
@@ -54,6 +54,38 @@ export async function activate(context: vscode.ExtensionContext) {
 		else {
 			vscode.window.showInformationMessage(`Fixinator is not available for this file type [${editor.document.languageId}]`);
 		}
+	}));
+
+	context.subscriptions.push(vscode.commands.registerCommand('fixinator.scan-all', () => {
+		
+		// We should check for fixinator key or fixinator endpoint here, as we are rate limited to 20 scan per hour.
+		// const { apiKey, endpoint } = getSettings();
+		// if (!apiKey || !endpoint) {
+		// 	vscode.window.showWarningMessage('Fixinator API Key or Endpoint is not set. Please set it in the settings.');
+		// 	return;
+		// }
+
+		//get all the files in the workspace
+		const files = vscode.workspace.findFiles("**/*.cf*", "**/node_modules/**,**/dist/**,**/out/**,**/build/**,**/.git/**,**/.svn/**,**/.hg/**,**/.idea/**,**/.vscode/**,**/.history/**", 1000);
+
+		files.then((uris) => {
+			diagnosticCollection.clear();
+			// Add it to the output channel
+			// logger.log(`l Fixinator is scanning  ${filePath}`);
+			// outputChannel.appendLine(`Fixinator is scanning  ${filePath}`);
+			// vscode.window.showInformationMessage(`Fixinator is scanning  ${filePath}`);
+			// runBoxFinxinatorScan(filePath);
+			uris.forEach((uri) => {
+				const editor = vscode.workspace.openTextDocument(uri);
+				// if(editor.document.languageId !== 'cfml') {
+				// 	return;
+				// }
+				const filePath = uri.fsPath;
+				runFixinatorScan(filePath);
+			});
+		}
+		);
+		
 	}));
 
 	context.subscriptions.push(
@@ -222,7 +254,7 @@ function runBoxFinxinatorScan(filePath: string) {
 
 async function createDiagnosticFromResult(path: string, result: any): Promise<vscode.Diagnostic> {
 
-	console.log("createDiagnosticFromREsult", path, result);
+	// console.log("createDiagnosticFromREsult", path, result);
 	// Read the contents of a file and find the location of the error
 	const diagnostic = await vscode.workspace.openTextDocument(path).then((document) => {
 
