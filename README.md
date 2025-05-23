@@ -23,6 +23,7 @@ The extension runs with either the [Commandbox Fixinator CLI](https://forgebox.i
 ## Features
 - VSCode Fixinator can scan your code via the command palette
 - VSCode Fixinator can scan your code on save
+- You can now scan all files in your workspace
 - Problems are displayed in editor as well as in the problems tab
 - If there are fix suggestions you can apply them directly from the editor
 - If you are a subscriber to Fixinator you can add your API key to the settings to use the API directly
