@@ -30,15 +30,15 @@ class Logger {
     error(message: string | any | any[]) {
         const title = `${this.loggerName} [ERROR]:`;
         console.error(this.loggerName, message);
-        this.channelAppend(title, message);
+        this.channelAppend(title, message, true);
     }
 
-    private channelAppend(title: string, message: any) {
+    private channelAppend(title: string, message: any, focus: boolean = false) {
         if (!this.outputChannel) {
             return;
         }
         this.outputChannel.appendLine(`${title} ${JSON.stringify(message, null, 2)}`);
-        this.outputChannel.show();
+        this.outputChannel.show(focus);
     }
 }
 

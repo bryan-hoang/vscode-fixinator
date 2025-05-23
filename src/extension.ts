@@ -10,7 +10,7 @@ import { readFileSync } from 'fs';
 import { readFile } from 'fs/promises';
 import { FixinatorQuickFixProvider } from './FixinatorQuickFixProvider';
 
-const outputChannel = vscode.window.createOutputChannel('Fixinator');
+const outputChannel = vscode.window.createOutputChannel('Fixinator', "cfml");
 
 const logger = new Logger('Fixinator', outputChannel);
 
@@ -99,7 +99,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	});
 
 
-	logger.log('Extension started');
+	logger.log('Fixinator extension started');
 }
 
 
@@ -114,7 +114,7 @@ async function runFixinatorScan(filePath: string) {
 
 async function runHTTPSFixinitatorScan(filePath: string) {
 
-	logger.log("Starting HTTPS Scan");
+	// logger.log("Starting HTTPS Scan");
 	const payload = {};
 	const text = await vscode.workspace.openTextDocument(filePath).then((document) => {
 		return document.getText();
@@ -126,7 +126,7 @@ async function runHTTPSFixinitatorScan(filePath: string) {
 
 
 	const { apiKey, endpoint } = getSettings();
-	logger.info(`Running Fixinator scan to ${endpoint}`);
+	// logger.info(`Running Fixinator scan to ${endpoint}`);
 	// Now fetch this via post
 	const headers = {
 		'Content-Type': 'application/json',
@@ -141,9 +141,9 @@ async function runHTTPSFixinitatorScan(filePath: string) {
 		body: JSON.stringify(payload)
 	}).then(response => {
 
-		logger.info(`Running got the response ${JSON.stringify(response)}`);
+		// logger.info(`Running got the response ${JSON.stringify(response)}`);
 		if (response.ok) {
-			vscode.window.showInformationMessage('Fixinator scan complete!');
+			// vscode.window.showInformationMessage('Fixinator scan complete!');
 			return response.json();
 		} else {
 			// logger.error(response);
@@ -156,9 +156,9 @@ async function runHTTPSFixinitatorScan(filePath: string) {
 			throw new Error('Fixinator scan failed!');
 		}
 	}).then(async (data) => {
-		console.log(data);
+		// console.log(data);
 		const results = data.results || [];
-		logger.log(`Found ${results.length} issues`);
+		// logger.log(`Found ${results.length} issues`);
 		const diagnosisForFile = [];
 		for (const resid in data.results) {
 			const result = data.results[resid];
@@ -173,7 +173,7 @@ async function runHTTPSFixinitatorScan(filePath: string) {
 		console.error(error);
 	}
 	).finally(() => {
-		logger.log("Finished HTTPS Scan");
+		// logger.log("Finished HTTPS Scan");
 	});
 
 
