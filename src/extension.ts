@@ -10,9 +10,9 @@ import { readFileSync } from 'fs';
 import { readFile } from 'fs/promises';
 import { FixinatorQuickFixProvider } from './FixinatorQuickFixProvider';
 
-const outputChannel = vscode.window.createOutputChannel('Fixinator', "cfml");
+// const outputChannel = vscode.window.createOutputChannel('Fixinator', "cfml");
 
-const logger = new Logger('Fixinator', outputChannel);
+const logger = new Logger('Fixinator');
 
 
 
@@ -30,7 +30,7 @@ const diagnosticDataMap = new WeakMap<vscode.Diagnostic, any>(); //Thbis is any 
 export async function activate(context: vscode.ExtensionContext) {
 
 
-	context.subscriptions.push(outputChannel);
+	// context.subscriptions.push(outputChannel);
 
 	diagnosticCollection = vscode.languages.createDiagnosticCollection('Fixinator');
 	context.subscriptions.push(diagnosticCollection);
@@ -90,7 +90,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(
 		vscode.languages.registerCodeActionsProvider(
-			'*.cfm,*.cfc',
+			{ scheme: 'file', language: 'cfml' },
 			new FixinatorQuickFixProvider(diagnosticDataMap, diagnosticCollection),
 			{ providedCodeActionKinds: FixinatorQuickFixProvider.providedCodeActionKinds }
 		)
@@ -161,7 +161,9 @@ async function runHTTPSFixinitatorScan(filePath: string) {
 	// logger.info(`Running Fixinator scan to ${endpoint}`);
 	// Now fetch this via post
 	const headers = {
+		// eslint-disable-next-line @typescript-eslint/naming-convention
 		'Content-Type': 'application/json',
+		// eslint-disable-next-line @typescript-eslint/naming-convention
 		"x-api-key": apiKey
 	};
 
@@ -190,7 +192,8 @@ async function runHTTPSFixinitatorScan(filePath: string) {
 	}).then(async (data) => {
 		// console.log(data);
 		const results = data.results || [];
-		// logger.log(`Found ${results.length} issues`);
+		logger.log(`Found ${results.length} issues`);
+		console.log({results});
 		const diagnosisForFile = [];
 		for (const resid in data.results) {
 			const result = data.results[resid];
@@ -258,25 +261,31 @@ async function createDiagnosticFromResult(path: string, result: any): Promise<vs
 	// Read the contents of a file and find the location of the error
 	const diagnostic = await vscode.workspace.openTextDocument(path).then((document) => {
 
-		const line = Math.max(0, result.line - 1);
-		const column = Math.max(0, result.column - 1);
-
+		let line = Math.max(0, result.line - 1);
 		const TheLine = document.lineAt(line);
+		const firstNonWhitespaceCharacterIndex = TheLine.firstNonWhitespaceCharacterIndex;
+		// const startofLine = TheLine.text.substring(0, firstNonWhitespaceCharacterIndex);
+		let column:number = (result.column || 1);
+			column = firstNonWhitespaceCharacterIndex + column;
+		// column = column - tabCount + (tabCount * tabsize);
+		// This fixes for some of the issues we have with the position being off
+		if (result.id === "plain-text-key") {
+			// const position = document.positionAt(result.position);
+			// line = position.line;
+			// column = position.character;
+		}
 
+		const endColumn = Math.max(0, column + result.context.length);
+		const endLine = line; //how about multiline lines?
 		
-		let startPosition: vscode.Position = new vscode.Position(line, TheLine.firstNonWhitespaceCharacterIndex);
-		let endPosition: vscode.Position = new vscode.Position(line, TheLine.range.end.character);
+		
+		
+		// let startPosition: vscode.Position = new vscode.Position(line, TheLine.firstNonWhitespaceCharacterIndex);
+		// let endPosition: vscode.Position = new vscode.Position(line, TheLine.range.end.character);
+		let startPosition: vscode.Position = new vscode.Position(line, column);
+		let endPosition: vscode.Position = new vscode.Position(endLine, endColumn);
 		// let endPosition: vscode.Position = startPosition.translate(0, Math.max(0, result.context.length - 2));
 		let title = result.title || result.TITLE;
-		// if we are plain-text-key, the context doesnt return the key! 
-		// So we have to select to the end of the line. 
-		if (result.id === "plain-text-key") {
-			// const lineInfo = document.lineAt(line);
-			// const lineText = lineInfo.text;
-			// const key = lineText.substring(column, lineText.length);
-			// const keyLength = key.length;
-			// endPosition = startPosition.translate(0, keyLength);
-		}
 
 		if (result.fixes && result.fixes.length > 0) {
 			const fix = result.fixes[0];
