@@ -1,10 +1,11 @@
+import * as util from "node:util";
 import * as vscode from 'vscode';
 
 class Logger {
     loggerName: string;
-    outputChannel: vscode.OutputChannel | undefined;
+    outputChannel: vscode.LogOutputChannel | undefined;
 
-    constructor(loggerName: string, outputChannel?: vscode.OutputChannel) {
+    constructor(loggerName: string, outputChannel: vscode.LogOutputChannel = vscode.window.createOutputChannel("Fixinator", { log: true })) {
         this.loggerName = loggerName;
         this.outputChannel = outputChannel;
     }
@@ -20,6 +21,10 @@ class Logger {
         console.info(title, message);
         this.channelAppend(title, message);
     }
+
+		debug(...messages: unknown[]): void {
+			this.outputChannel.debug(util.format(...messages));
+		}
 
     warn(message: string | any | any[]) {
         const title = `${this.loggerName} [WARN]:`;

@@ -1,4 +1,4 @@
-// Runs the commands for fixinator. 
+// Runs the commands for fixinator.
 const path = require('path');
 import Logger from './logger';
 import { readFileSync } from 'fs';
@@ -48,7 +48,7 @@ export class FixinatorCommand {
     // includeScanners: string = "";  //(A comma separated list of scanner ids to scan, all others ignored)
     // configFile: string = "";  //(A path to a .fixinator.json file to use)
     // goals: string = "security";  //(A list of goals for scanning [compatibility,security], default: security)
-    // 
+    //
 
     constructor() {
         this.logger = new Logger('[Fixinator]');
@@ -76,8 +76,4 @@ export class FixinatorCommand {
         return JSON.parse(jsonString);
         return {};
     }
-}
-
-export function add(a: number, b: number): number {
-    return a + b;
 }

@@ -10,14 +10,11 @@
 			"type": "extensionHost",
 			"request": "launch",
 			"args": [
-				"${workspaceFolder}/extension_workspace",
 				"--extensionDevelopmentPath=${workspaceFolder}",
 				"--disable-extension=markdrew.vscode-naming-rules",
 			],
-			"outFiles": [
-				"${workspaceFolder}/dist/**/*.js"
-			],
-			"preLaunchTask": "${defaultBuildTask}",
+			"outFiles": ["${workspaceFolder}/dist/**/*.js"],
+			"preLaunchTask": "npm: watch",
 		},
 		{
 			"name": "Extension Tests",
