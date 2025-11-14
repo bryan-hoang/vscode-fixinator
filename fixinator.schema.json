@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "ignorePaths": {
+      "description": "An array of path patterns to ignore. Certain paths are always ignored such as .git or .svn paths.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "ignoreExtensions": {
+      "description": "An array of file extensions to ignore. Certain file extensions such as image files (png, gif, jpg, etc) are always ignored.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "ignoreScanners": {
+      "description": "An array of scanner name slugs to ignore. For example `[\"sqlinjection\", \"xss\", \"pathtraversal\"]` would ignore or omit the results of the SQL Injection Scanner the Cross Site Scripting (XSS) Scanner and the Path Traversal scanner.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "minSeverity": {
+      "description": "Default: low - The minimum severity level that will be flagged. Set this to high if you only care about severe issues.",
+      "default": "low",
+      "type": "string",
+      "enum": ["low", "medium", "high"]
+    },
+    "minConfidence": {
+      "description": "Default: high - The minimum confidence level that will be flagged. Issues with low confidence will be more likely to be false positives.",
+      "default": "high",
+      "type": "string",
+      "enum": ["none", "low", "medium", "high"]
+    },
+    "ignorePatterns": {
+      "description": "Some applications may have their own functions for safely encoding variables to prevent Cross Site Scripting (XSS).",
+      "type": "object",
+    },
+    "engines": {
+      "description": "An array of CFML engines that the code runs on.",
+      "type": "array",
+    },
+    "includeScanners": {
+      "description": "An array of scanner ids which to use, all other scanners will be ignored.",
+      "type": "array",
+      "items": {
+        "required": [],
+        "properties": {}
+      }
+    }
+  },
+  "required": []
+}

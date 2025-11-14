@@ -8,6 +8,8 @@
   `.fixinator.json` configuration file use when using CommandBox for scans
 - New `fixinator.customBoxArgs` setting for specifying additional command line
   arguments to pass to the CommandBox (`box`) binary when using it for scans
+- `.fixinator.json` files are now registered with a JSON schema that gives the
+  JSON LSP server information about the top-level properties of the file
 
 ## 2024-06-11
 - Cleaning up the output so we dont focus on the output window

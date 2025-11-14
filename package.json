@@ -28,6 +28,12 @@
         "title": "Fixinator Security Scan - All Files"
       }
     ],
+    "jsonValidation": [
+      {
+        "fileMatch": ".fixinator.json",
+        "url": "./fixinator.schema.json"
+      }
+    ],
     "configuration": {
       "title": "Fixinator",
       "properties": {
