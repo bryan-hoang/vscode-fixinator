@@ -31,6 +31,7 @@ function isColdFusionDocument(document: vscode.TextDocument) {
 }
 
 export async function activate(context: vscode.ExtensionContext) {
+	logger.info('Fixinator extension started');
 
 	// Make sure that these channels are disposed when the extension is deactivated.
 	context.subscriptions.push(logger.outputChannel);
@@ -55,7 +56,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand('fixinator.scan-all', () => {
-		
+
 		// We should check for fixinator key or fixinator endpoint here, as we are rate limited to 20 scan per hour.
 		// const { apiKey, endpoint } = getSettings();
 		// if (!apiKey || !endpoint) {
@@ -141,14 +142,14 @@ async function runHTTPSFixinitatorScan(textDocumentUri: vscode.Uri) {
 
 	logger.info(`Running HTTPS scan on ${filePath} using ${endpoint}`);
 
-	// logger.log("Starting HTTPS Scan");
-	const payload = {};
 	const text = await vscode.workspace.openTextDocument(filePath).then((document) => {
 		return document.getText();
 	});
-	payload['files'] = [{ path: filePath, data: text }];
-	payload['config'] = {};
-	payload['categories'] = false;
+	const payload = {
+		categories: true,
+		files: [{ data: text, path: filePath }],
+		config: fixinatorConfig,
+	};
 
 	// Now fetch this via post
 	const headers = {
@@ -158,51 +159,56 @@ async function runHTTPSFixinitatorScan(textDocumentUri: vscode.Uri) {
 		"x-api-key": apiKey
 	};
 
-	// logger.log({ endpoint, headers, payload });
+	logger.trace('Making request with payload', payload);
 
-	fetch(endpoint, {
+	await fetch(endpoint, {
 		headers,
 		method: 'POST',
-		body: JSON.stringify(payload)
-	}).then(response => {
-
-		// logger.info(`Running got the response ${JSON.stringify(response)}`);
-		if (response.ok) {
-			// vscode.window.showInformationMessage('Fixinator scan complete!');
-			return response.json();
-		} else {
-			// logger.error(response);
-			if (response.status >= 400 && response.status < 500) {
-				logger.error({ info: "Fixnator scan rejected by server", response });
-				vscode.window.showErrorMessage('Fixinator scan failed! Check your API Key and Endpoint');
-				throw new Error('Fixinator Scan rejected by server');
+		body: JSON.stringify(payload),
+	})
+		.then(async (response) => {
+			if (response.ok) {
+				return await response.json();
+			} else {
+				if (response.status >= 400 && response.status < 500) {
+					logger.error({
+						error: 'Fixnator scan rejected by server',
+						response,
+						endpoint,
+						payload,
+					});
+					vscode.window.showErrorMessage(
+						'Fixinator scan failed! Check your API Key and Endpoint',
+					);
+					return;
+				}
+				throw new Error('Fixinator scan failed!', { cause: response });
 			}
-			// vscode.window.showErrorMessage(`Fixinator scan failed! ${response.statusText}`);
-			throw new Error('Fixinator scan failed!');
-		}
-	}).then(async (data) => {
-		// console.log(data);
-		const results = data.results || [];
-		logger.log(`Found ${results.length} issues`);
-		console.log({results});
-		const diagnosisForFile = [];
-		for (const resid in data.results) {
-			const result = data.results[resid];
-			const diagnosis = await createDiagnosticFromResult(filePath, result);
-			diagnosisForFile.push(diagnosis);
-		}
-		diagnosticCollection.set(vscode.Uri.file(filePath), diagnosisForFile);
+		})
+		.then(async (data) => {
+			// Stop processing if no data was returned.
+			if (data === undefined) {
+				return;
+			}
 
-	}).catch(error => {
-		logger.error(error);
-		vscode.window.showErrorMessage(`Fixinator scan failed! ${error.message}`);
-		console.error(error);
-	}
-	).finally(() => {
-		// logger.log("Finished HTTPS Scan");
-	});
-
-
+			const results = data.results || [];
+			logger.log(
+				`Found ${results.length} issues in ${filePath}`,
+			);
+			logger.trace({ results });
+			const diagnosisForFile = [];
+			for (const resid in data.results) {
+				const result = data.results[resid];
+				const diagnosis = await createDiagnosticFromResult(filePath, result);
+				diagnosisForFile.push(diagnosis);
+			}
+			diagnosticCollection.set(vscode.Uri.file(filePath), diagnosisForFile);
+			logger.info(`Finished HTTPS scan on ${filePath}`);
+		})
+		.catch((error) => {
+			logger.error(error);
+			vscode.window.showErrorMessage(`Fixinator scan failed! ${error.message}`);
+		});
 }
 
 function runBoxFinxinatorScan(textDocumentUri: vscode.Uri) {
