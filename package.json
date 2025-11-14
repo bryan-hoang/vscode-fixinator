@@ -50,6 +50,16 @@
           "type": "boolean",
           "default": false,
           "description": "Use CommandBox to run Fixinator"
+        },
+        "fixinator.configFile": {
+          "type": "string",
+          "default": "",
+          "description": "The path to a .fixinator.json configuration file to use"
+        },
+        "fixinator.customBoxArgs": {
+          "type": "array",
+          "default": [],
+          "description": "Custom arguments to pass when calling the CommandBox (`box`) binary"
         }
       }
     }

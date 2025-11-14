@@ -1,4 +1,14 @@
 # Change Log
+
+## [Unreleased]
+
+### Added
+
+- New `fixinator.configFile` setting for specifying the path to a
+  `.fixinator.json` configuration file use when using CommandBox for scans
+- New `fixinator.customBoxArgs` setting for specifying additional command line
+  arguments to pass to the CommandBox (`box`) binary when using it for scans
+
 ## 2024-06-11
 - Cleaning up the output so we dont focus on the output window
 - Added a scan all files function
