@@ -256,11 +256,9 @@ function runBoxFinxinatorScan(filePath: string) {
 }
 
 async function createDiagnosticFromResult(path: string, result: any): Promise<vscode.Diagnostic> {
-
 	// console.log("createDiagnosticFromREsult", path, result);
 	// Read the contents of a file and find the location of the error
 	const diagnostic = await vscode.workspace.openTextDocument(path).then((document) => {
-
 		let line = Math.max(0, result.line - 1);
 		const TheLine = document.lineAt(line);
 		const firstNonWhitespaceCharacterIndex = TheLine.firstNonWhitespaceCharacterIndex;
@@ -277,9 +275,7 @@ async function createDiagnosticFromResult(path: string, result: any): Promise<vs
 
 		const endColumn = Math.max(0, column + result.context.length);
 		const endLine = line; //how about multiline lines?
-		
-		
-		
+
 		// let startPosition: vscode.Position = new vscode.Position(line, TheLine.firstNonWhitespaceCharacterIndex);
 		// let endPosition: vscode.Position = new vscode.Position(line, TheLine.range.end.character);
 		let startPosition: vscode.Position = new vscode.Position(line, column);
@@ -303,26 +299,22 @@ async function createDiagnosticFromResult(path: string, result: any): Promise<vs
 			endPosition
 		);
 
-
-		const vscodeDiagnostic = new vscode.Diagnostic(range, result.message, severityMap[result.severity]);
+		const vscodeDiagnostic = new vscode.Diagnostic(range, result.message, severityMap[result.severity as keyof typeof severityMap]);
 		vscodeDiagnostic.source = 'fixinator';
-		if (result.link && result.title) {
+		if (result.link) {
 			vscodeDiagnostic.code = {
-				value: result.title,
+				value: result.id,
 				target: vscode.Uri.parse(result.link),
 			};
+		} else {
+			vscodeDiagnostic.code = result.id;
 		}
-		else {
-			vscodeDiagnostic.code = result.title;
-		}
-
 
 		return vscodeDiagnostic;
 	});
 
 	diagnosticDataMap.set(diagnostic, result);
 	return diagnostic;
-
 }
 
 
