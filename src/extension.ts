@@ -31,6 +31,7 @@ function isColdFusionDocument(document: vscode.TextDocument) {
 }
 
 export async function activate(context: vscode.ExtensionContext) {
+	logger.info('Fixinator extension started');
 
 	// Make sure that these channels are disposed when the extension is deactivated.
 	context.subscriptions.push(logger.outputChannel);
@@ -55,7 +56,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand('fixinator.scan-all', () => {
-		
+
 		// We should check for fixinator key or fixinator endpoint here, as we are rate limited to 20 scan per hour.
 		// const { apiKey, endpoint } = getSettings();
 		// if (!apiKey || !endpoint) {
@@ -158,9 +159,9 @@ async function runHTTPSFixinitatorScan(textDocumentUri: vscode.Uri) {
 		"x-api-key": apiKey
 	};
 
-	// logger.log({ endpoint, headers, payload });
+	logger.trace('Making request with payload', payload);
 
-	fetch(endpoint, {
+	await fetch(endpoint, {
 		headers,
 		method: 'POST',
 		body: JSON.stringify(payload)
