@@ -17,6 +17,7 @@
   `false`, then the HTTPS scan now uses the contents of the configured
   `.fixinator.json` file as the configuration to put in the payload of the
   request
+- Updated README with link to extension on the Visual Studio Marketplace.
 
 ## 2024-06-11
 - Cleaning up the output so we dont focus on the output window
