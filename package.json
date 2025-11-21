@@ -2,7 +2,7 @@
   "name": "vscode-fixinator",
   "displayName": "Fixinator Security Scanner",
   "description": "Fixinator Security scanning in VSCode",
-  "version": "1.1.1",
+  "version": "1.2.1",
   "license": "MIT",
   "publisher": "markdrew",
   "repository": "https://github.com/cybersonic/vscode-fixinator",
