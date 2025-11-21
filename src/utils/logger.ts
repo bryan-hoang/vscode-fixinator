@@ -1,44 +1,57 @@
+import * as util from 'node:util';
 import * as vscode from 'vscode';
 
 class Logger {
     loggerName: string;
-    outputChannel: vscode.OutputChannel | undefined;
+    outputChannel: vscode.LogOutputChannel;
 
-    constructor(loggerName: string, outputChannel?: vscode.OutputChannel) {
+    /**
+     * Whether the extension is running in a CI environment.
+     */
+    private readonly isCI = process.env.CI === "true";
+
+    /**
+     * Logs messages to the console if the extension is running in a CI environment.
+     */
+    private logForCI(...messages: unknown[]): void {
+        if (this.isCI) {
+            console.log(...messages);
+        }
+    }
+
+    constructor(loggerName: string, outputChannel: vscode.LogOutputChannel = vscode.window.createOutputChannel("Fixinator", { log: true })) {
         this.loggerName = loggerName;
         this.outputChannel = outputChannel;
     }
 
-    log(message: string | any | any[]) {
-        // shortcut
-        this.info(message);
+    trace(...messages: unknown[]) {
+        const title = `${this.loggerName} [TRACE]:`;
+        this.logForCI(title, ...messages);
+        this.outputChannel.trace(util.format(title, ...messages));
     }
 
-    info(message: string | any | any[]) {
+    debug(...messages: unknown[]): void {
+        const title = `${this.loggerName} [DEBUG]:`;
+        this.logForCI(title, ...messages);
+        this.outputChannel.debug(util.format(title, ...messages));
+    }
 
+    info(...messages: unknown[]) {
         const title = `${this.loggerName} [INFO]:`;
-        console.info(title, message);
-        this.channelAppend(title, message);
+        this.logForCI(title, ...messages);
+        this.outputChannel.info(util.format(title, ...messages));
     }
 
-    warn(message: string | any | any[]) {
+    warn(...messages: unknown[]) {
         const title = `${this.loggerName} [WARN]:`;
-        console.warn(this.loggerName, message);
-        this.channelAppend(title, message);
+        this.logForCI(title, ...messages);
+        this.outputChannel.warn(util.format(title, ...messages));
     }
 
-    error(message: string | any | any[]) {
+    error(...messages: unknown[]) {
         const title = `${this.loggerName} [ERROR]:`;
-        console.error(this.loggerName, message);
-        this.channelAppend(title, message, true);
-    }
-
-    private channelAppend(title: string, message: any, focus: boolean = false) {
-        if (!this.outputChannel) {
-            return;
-        }
-        this.outputChannel.appendLine(`${title} ${JSON.stringify(message, null, 2)}`);
-        this.outputChannel.show(focus);
+        this.logForCI(title, ...messages);
+        this.outputChannel.error(util.format(title, ...messages));
     }
 }
 

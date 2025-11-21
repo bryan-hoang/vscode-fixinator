@@ -1,20 +1,18 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import Logger from './utils/logger';
-import { FixinatorCommand } from './utils/FixinatorCommand';
-import { spawn } from 'child_process';
-import path = require('path');
-import * as os from 'os';
-import { readFileSync } from 'fs';
-import { readFile } from 'fs/promises';
-import { FixinatorQuickFixProvider } from './FixinatorQuickFixProvider';
 
-// const outputChannel = vscode.window.createOutputChannel('Fixinator', "cfml");
+import * as assert from 'node:assert/strict';
+import { spawn } from 'node:child_process';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+
+import { FixinatorQuickFixProvider } from './FixinatorQuickFixProvider';
+import { FixinatorCommand } from './utils/FixinatorCommand';
+import Logger from './utils/logger';
+import { fixDriveCasingInWindows, getWorkspaceFolderPath } from './utils/path';
 
 const logger = new Logger('Fixinator');
-
-
 
 // Remaps the severity from Fixinator to VSCode
 const severityMap = {
@@ -26,38 +24,39 @@ const severityMap = {
 
 let diagnosticCollection: vscode.DiagnosticCollection;
 const diagnosticDataMap = new WeakMap<vscode.Diagnostic, any>(); //Thbis is any as we dont have an object for a fixinator result yet.
+const coldFusionLanguageId = "cfml";
+
+function isColdFusionDocument(document: vscode.TextDocument) {
+	return document.languageId === coldFusionLanguageId;
+}
 
 export async function activate(context: vscode.ExtensionContext) {
+	logger.info('Fixinator extension started');
 
-
-	// context.subscriptions.push(outputChannel);
+	// Make sure that these channels are disposed when the extension is deactivated.
+	context.subscriptions.push(logger.outputChannel);
 
 	diagnosticCollection = vscode.languages.createDiagnosticCollection('Fixinator');
 	context.subscriptions.push(diagnosticCollection);
 
 	context.subscriptions.push(vscode.commands.registerCommand('fixinator.scan', async () => {
 		const editor = vscode.window.activeTextEditor;
-
-		if (editor && editor.document.languageId === 'cfml') {
-			const document = editor.document;
-			const filePath = document.uri.fsPath;
-
-			diagnosticCollection.clear();
-			// Add it to the output channel
-			// logger.log(`l Fixinator is scanning  ${filePath}`);
-			// outputChannel.appendLine(`Fixinator is scanning  ${filePath}`);
-			// vscode.window.showInformationMessage(`Fixinator is scanning  ${filePath}`);
-			// runBoxFinxinatorScan(filePath);
-			await runFixinatorScan(filePath);
-
+		if (!editor) {
+			vscode.window.showInformationMessage('No active text editor to perform scan on');
+			return;
 		}
-		else {
+
+		if (isColdFusionDocument(editor.document)) {
+			const document = editor.document;
+			diagnosticCollection.clear();
+			await runFixinatorScan(document.uri);
+		} else {
 			vscode.window.showInformationMessage(`Fixinator is not available for this file type [${editor.document.languageId}]`);
 		}
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand('fixinator.scan-all', () => {
-		
+
 		// We should check for fixinator key or fixinator endpoint here, as we are rate limited to 20 scan per hour.
 		// const { apiKey, endpoint } = getSettings();
 		// if (!apiKey || !endpoint) {
@@ -76,16 +75,10 @@ export async function activate(context: vscode.ExtensionContext) {
 			// vscode.window.showInformationMessage(`Fixinator is scanning  ${filePath}`);
 			// runBoxFinxinatorScan(filePath);
 			uris.forEach((uri) => {
-				const editor = vscode.workspace.openTextDocument(uri);
-				// if(editor.document.languageId !== 'cfml') {
-				// 	return;
-				// }
-				const filePath = uri.fsPath;
-				runFixinatorScan(filePath);
+				runFixinatorScan(uri);
 			});
 		}
 		);
-		
 	}));
 
 	context.subscriptions.push(
@@ -114,51 +107,50 @@ export async function activate(context: vscode.ExtensionContext) {
 		})
 	);
 
+	context.subscriptions.push(
+		vscode.workspace.onDidSaveTextDocument((document) => {
+			const { scanOnSave } = getSettings(document.uri);
+			if (!scanOnSave || !isColdFusionDocument(document)) {
+				return;
+			}
 
-	vscode.workspace.onDidSaveTextDocument((document) => {
-		const { scanOnSave } = getSettings();
-		if (!scanOnSave) {
-			return;
-		}
-		if (document.languageId !== 'cfml') {
-			return;
-		}
-		const filePath = document.uri.fsPath;
-
-		diagnosticCollection.clear();
-		const message = vscode.window.showInformationMessage(`Fixinator is scanning  ${filePath}`);
-		runFixinatorScan(filePath);
-	});
-
-
-	logger.log('Fixinator extension started');
+			diagnosticCollection.clear();
+			runFixinatorScan(document.uri);
+		}),
+	);
 }
 
+async function runFixinatorScan(textDocumentUri: vscode.Uri): Promise<void> {
+	const filePath = textDocumentUri.fsPath;
+	vscode.window.showInformationMessage(
+		`Fixinator is scanning ${filePath}`,
+	);
 
-async function runFixinatorScan(filePath: string) {
-	const { useCommandbox } = getSettings();
+	const { useCommandbox } = getSettings(textDocumentUri);
 	if (useCommandbox) {
-		return runBoxFinxinatorScan(filePath);
+		await runBoxFinxinatorScan(textDocumentUri);
+	} else {
+		await runHTTPSFixinitatorScan(textDocumentUri);
 	}
-
-	return runHTTPSFixinitatorScan(filePath);
 }
 
-async function runHTTPSFixinitatorScan(filePath: string) {
+async function runHTTPSFixinitatorScan(textDocumentUri: vscode.Uri) {
+	const { apiKey, endpoint, fixinatorConfig } = getSettings(textDocumentUri);
+	const filePath = fixDriveCasingInWindows(textDocumentUri.fsPath);
+	const cwd = getWorkspaceFolderPath(textDocumentUri);
+	assert(typeof cwd === 'string');
 
-	// logger.log("Starting HTTPS Scan");
-	const payload = {};
+	logger.info(`Running HTTPS scan on ${filePath} using ${endpoint}`);
+
 	const text = await vscode.workspace.openTextDocument(filePath).then((document) => {
 		return document.getText();
 	});
-	payload['files'] = [{ path: filePath, data: text }];
-	payload['config'] = {};
-	payload['categories'] = false;
+	const payload = {
+		categories: true,
+		files: [{ data: text, path: filePath }],
+		config: fixinatorConfig,
+	};
 
-
-
-	const { apiKey, endpoint } = getSettings();
-	// logger.info(`Running Fixinator scan to ${endpoint}`);
 	// Now fetch this via post
 	const headers = {
 		// eslint-disable-next-line @typescript-eslint/naming-convention
@@ -167,100 +159,128 @@ async function runHTTPSFixinitatorScan(filePath: string) {
 		"x-api-key": apiKey
 	};
 
-	// logger.log({ endpoint, headers, payload });
+	logger.trace('Making request with payload', payload);
 
-	fetch(endpoint, {
+	await fetch(endpoint, {
 		headers,
 		method: 'POST',
-		body: JSON.stringify(payload)
-	}).then(response => {
-
-		// logger.info(`Running got the response ${JSON.stringify(response)}`);
-		if (response.ok) {
-			// vscode.window.showInformationMessage('Fixinator scan complete!');
-			return response.json();
-		} else {
-			// logger.error(response);
-			if (response.status >= 400 && response.status < 500) {
-				logger.error({ info: "Fixnator scan rejected by server", response });
-				vscode.window.showErrorMessage('Fixinator scan failed! Check your API Key and Endpoint');
-				throw new Error('Fixinator Scan rejected by server');
+		body: JSON.stringify(payload),
+	})
+		.then(async (response) => {
+			if (response.ok) {
+				return await response.json();
+			} else {
+				if (response.status >= 400 && response.status < 500) {
+					logger.error({
+						error: 'Fixnator scan rejected by server',
+						response,
+						endpoint,
+						payload,
+					});
+					vscode.window.showErrorMessage(
+						'Fixinator scan failed! Check your API Key and Endpoint',
+					);
+					return;
+				}
+				throw new Error('Fixinator scan failed!', { cause: response });
 			}
-			// vscode.window.showErrorMessage(`Fixinator scan failed! ${response.statusText}`);
-			throw new Error('Fixinator scan failed!');
-		}
-	}).then(async (data) => {
-		// console.log(data);
-		const results = data.results || [];
-		logger.log(`Found ${results.length} issues`);
-		console.log({results});
-		const diagnosisForFile = [];
-		for (const resid in data.results) {
-			const result = data.results[resid];
-			const diagnosis = await createDiagnosticFromResult(filePath, result);
-			diagnosisForFile.push(diagnosis);
-		}
-		diagnosticCollection.set(vscode.Uri.file(filePath), diagnosisForFile);
+		})
+		.then(async (data) => {
+			// Stop processing if no data was returned.
+			if (data === undefined) {
+				return;
+			}
 
-	}).catch(error => {
-		logger.error(error);
-		vscode.window.showErrorMessage(`Fixinator scan failed! ${error.message}`);
-		console.error(error);
-	}
-	).finally(() => {
-		// logger.log("Finished HTTPS Scan");
-	});
-
-
+			const results = data.results || [];
+			logger.info(`Found ${results.length} issues in ${filePath}`);
+			logger.trace({ results });
+			const diagnosisForFile = [];
+			for (const resid in data.results) {
+				const result = data.results[resid];
+				const diagnosis = await createDiagnosticFromResult(filePath, result);
+				diagnosisForFile.push(diagnosis);
+			}
+			diagnosticCollection.set(vscode.Uri.file(filePath), diagnosisForFile);
+			logger.info(`Finished HTTPS scan on ${filePath}`);
+		})
+		.catch((error) => {
+			logger.error(error);
+			vscode.window.showErrorMessage(`Fixinator scan failed! ${error.message}`);
+		});
 }
-function runBoxFinxinatorScan(filePath: string) {
 
-	logger.log("Starting Box Fixinator Scan");
-	const result = spawn('box', ['fixinator', `path=${filePath}`, 'verbose=false', 'failOnIssues=false', 'json=true'], { cwd: vscode.workspace.rootPath });
+function runBoxFinxinatorScan(textDocumentUri: vscode.Uri) {
+	return new Promise<void>((resolve, reject) => {
+		const { configFile, customBoxArgs } = getSettings(textDocumentUri);
+		const filePath = fixDriveCasingInWindows(textDocumentUri.fsPath);
+		const cwd = getWorkspaceFolderPath(textDocumentUri);
+		assert(typeof cwd === 'string');
 
-	let responseData = '';
-	result.addListener('exit', async (code) => {
+		logger.info(`Starting CommandBox scan on ${filePath}`);
 
-		if (responseData === '') {
-			vscode.window.showErrorMessage('Fixinator scan failed!');
-			return;
+		const command = 'box';
+		const args = [
+			'fixinator',
+			'json=true',
+			'failOnIssues=false',
+		];
+		if (configFile.length > 0) {
+			args.push(`configFile=${configFile}`);
 		}
-		if (code === 0) {
-			vscode.window.showInformationMessage('Fixinator scan complete!');
-		} else {
-			vscode.window.showErrorMessage('Fixinator scan failed!');
-			return;
+		if (customBoxArgs.length > 0) {
+			args.push(...customBoxArgs);
 		}
+		args.push(`path=${filePath}`);
 
-		const diagnosisForFile = [];
-		const scan = JSON.parse(responseData);
+		logger.debug(`Spawn: (cwd=${cwd}) ${command} ${args.join(' ')}`);
+		const result = spawn(command, args, { cwd });
 
-		for (const result of scan.results) {
-			const diagnosis = await createDiagnosticFromResult(filePath, result);
-			diagnosisForFile.push(diagnosis);
-		}
-		diagnosticCollection.set(vscode.Uri.file(filePath), diagnosisForFile);
+		let responseData = '';
 
+		result.stdout.on('data', (data) => {
+			responseData += data.toString();
+		});
 
+		result.stderr.on('data', (data) => {
+			logger.error(data.toString());
+		});
 
+		result.addListener('exit', async (code) => {
+			if (responseData === '' || code !== 0) {
+				const error = new Error('Fixinator scan failed!', { cause: { responseData, code } });
+				vscode.window.showErrorMessage(error.message);
+				reject(error);
+			}
 
-	});
+			const diagnosisForFile = [];
+			let scan;
 
-	result.stderr.on('data', (data) => {
-		logger.error(data.toString());
-	});
+			try {
+				scan = JSON.parse(responseData);
+			} catch (error) {
+				logger.error({ error, responseData });
+				reject(error);
+			}
 
-	result.stdout.on('data', async (data) => {
-		responseData += data.toString();
+			logger.info(`Found ${scan.results.length} issues in ${filePath}`);
+			logger.trace('CommandBox scan results:', scan.results);
+
+			for (const result of scan.results) {
+				const diagnosis = await createDiagnosticFromResult(filePath, result);
+				diagnosisForFile.push(diagnosis);
+			}
+			diagnosticCollection.set(vscode.Uri.file(filePath), diagnosisForFile);
+
+			logger.info(`Finished CommandBox scan on ${filePath}`);
+			resolve();
+		});
 	});
 }
 
 async function createDiagnosticFromResult(path: string, result: any): Promise<vscode.Diagnostic> {
-
 	// console.log("createDiagnosticFromREsult", path, result);
 	// Read the contents of a file and find the location of the error
 	const diagnostic = await vscode.workspace.openTextDocument(path).then((document) => {
-
 		let line = Math.max(0, result.line - 1);
 		const TheLine = document.lineAt(line);
 		const firstNonWhitespaceCharacterIndex = TheLine.firstNonWhitespaceCharacterIndex;
@@ -277,9 +297,7 @@ async function createDiagnosticFromResult(path: string, result: any): Promise<vs
 
 		const endColumn = Math.max(0, column + result.context.length);
 		const endLine = line; //how about multiline lines?
-		
-		
-		
+
 		// let startPosition: vscode.Position = new vscode.Position(line, TheLine.firstNonWhitespaceCharacterIndex);
 		// let endPosition: vscode.Position = new vscode.Position(line, TheLine.range.end.character);
 		let startPosition: vscode.Position = new vscode.Position(line, column);
@@ -303,39 +321,77 @@ async function createDiagnosticFromResult(path: string, result: any): Promise<vs
 			endPosition
 		);
 
-
-		const vscodeDiagnostic = new vscode.Diagnostic(range, result.message, severityMap[result.severity]);
+		const vscodeDiagnostic = new vscode.Diagnostic(range, result.message, severityMap[result.severity as keyof typeof severityMap]);
 		vscodeDiagnostic.source = 'fixinator';
-		if (result.link && result.title) {
+		if (result.link) {
 			vscodeDiagnostic.code = {
-				value: result.title,
+				value: result.id,
 				target: vscode.Uri.parse(result.link),
 			};
+		} else {
+			vscodeDiagnostic.code = result.id;
 		}
-		else {
-			vscodeDiagnostic.code = result.title;
-		}
-
 
 		return vscodeDiagnostic;
 	});
 
 	diagnosticDataMap.set(diagnostic, result);
 	return diagnostic;
-
 }
 
+function getSettings(textDocumentUri?: vscode.Uri) {
+	logger.trace('Getting settings');
+	const settings = vscode.workspace.getConfiguration('fixinator', textDocumentUri);
 
-function getSettings() {
-	const settings = vscode.workspace.getConfiguration('fixinator');
 	const endpoint: string = settings.get('endpoint') || 'https://api.fixinator.app/v1/scan';
-	const apiKey: string = settings.get('apiKey');
-	const scanOnSave = settings.get('scanOnSave');
-	const useCommandbox = settings.get('useCommandbox');
-	return { endpoint, apiKey, scanOnSave, useCommandbox };
+	const apiKey: string = settings.get('apiKey') || '';
+	const scanOnSave: boolean = Boolean(settings.get('scanOnSave'));
+	const useCommandbox: boolean = Boolean(settings.get('useCommandbox'));
+	const customBoxArgs: string[] = settings.get('customBoxArgs') || [];
+	const configFile: string = settings.get('configFile') || '';
+
+	const cwd = getWorkspaceFolderPath(textDocumentUri);
+	assert(typeof cwd === 'string');
+
+	// Check config file if specified.
+	let resolvedConfigFile = configFile;
+	let fixinatorConfig: any = {};
+	if (configFile.length > 0) {
+		if (!path.isAbsolute(configFile)) {
+			resolvedConfigFile = path.resolve(cwd, configFile);
+		}
+
+		logger.trace({ resolvedConfigFile });
+
+		if (!fs.existsSync(resolvedConfigFile)) {
+			const error = new Error(`Specified Fixinator config file \`${configFile}\` does not exist`);
+			vscode.window.showErrorMessage(error.message);
+			throw error;
+		}
+
+		try {
+			fixinatorConfig = JSON.parse(String(fs.readFileSync(resolvedConfigFile)));
+		} catch (e) {
+			const error = new Error(`Cannot parse Fixinator config file \`${configFile}\``, { cause: e });
+			logger.error(error.message);
+			vscode.window.showErrorMessage(error.message);
+			throw error;
+		}
+	}
+
+	const extensionConfig = {
+		endpoint,
+		apiKey,
+		scanOnSave,
+		useCommandbox,
+		configFile,
+		resolvedConfigFile,
+		fixinatorConfig,
+		customBoxArgs,
+	};
+	logger.trace({ extensionConfig });
+	return extensionConfig;
 }
 
 // This method is called when your extension is deactivated
 export function deactivate() { }
-
-

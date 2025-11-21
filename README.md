@@ -1,13 +1,13 @@
 # Fixinator Extension for VSCode
 
-<!-- 
+<!--
 ```
-______ _______   _______ _   _   ___ _____ ___________ 
+______ _______   _______ _   _   ___ _____ ___________
 |  ___|_   _\ \ / /_   _| \ | | / _ \_   _|  _  | ___ \
 | |_    | |  \ V /  | | |  \| |/ /_\ \| | | | | | |_/ /
-|  _|   | |  /   \  | | | . ` ||  _  || | | | | |    / 
-| |    _| |_/ /^\ \_| |_| |\  || | | || | \ \_/ / |\ \ 
-\_|    \___/\/   \/\___/\_| \_/\_| |_/\_/  \___/\_| \_| 
+|  _|   | |  /   \  | | | . ` ||  _  || | | | | |    /
+| |    _| |_/ /^\ \_| |_| |\  || | | || | \ \_/ / |\ \
+\_|    \___/\/   \/\___/\_| \_/\_| |_/\_/  \___/\_| \_|
 ```
 -->
 <img src="https://raw.githubusercontent.com/cybersonic/vscode-fixinator/refs/heads/main/assets/icon.png" alt="Fixinator"/>
@@ -15,7 +15,8 @@ ______ _______   _______ _   _   ___ _____ ___________
 [Fixinator](https://fixinator.app/) makes it easy to find and fix security vulnerabilities in your CFML / ColdFusion source code.
 ---
 ## Description
-The VScode-Fixinator allows you to scan and fix your cfml code directly. 
+
+A Visual Studio Code extension for [Fixinator](https://github.com/foundeo/fixinator), a ColdFusion / CFML Code Security Scanner. Available on the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=markdrew.vscode-fixinator).
 
 The extension runs with either the [Commandbox Fixinator CLI](https://forgebox.io/view/fixinator) (`box fixinator`) package or using the Fixinator API directly to scan your CFML code.  If you are a subscriber to Fixinator you can add your API key to the settings to use the API directly.  If you are not a subscriber you can still use the extension to run the Fixinator CLI but are limited in the number of scans you can run.
 
